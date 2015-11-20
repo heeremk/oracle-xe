@@ -1,26 +1,27 @@
-FROM oracle-linux:7.1
+FROM oraclelinux:7.1
 MAINTAINER Mark Heeren <mmmheeren@gmail.com>
 
 # Install prerequisites
-RUN yum install -y make libaio bc net-tools vte3
+ENV http_proxy $HTTP_PROXY
+RUN yum install -y make libaio bc net-tools vte3 unzip
 
 # Install oracle
-RUN unzip /vagrant/oracle-xe-11.2.0-1.0.x86_64.rpm.zip -d /tmp
-#ADD Disk1/oracle-xe-11.2.0-1.0.x86_64.rpm /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm
-RUN yum localinstall -y /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm
-RUN rm -f /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm
+# Make sure docker host has >2G swap available
+ADD oracle-xe-11.2.0-1.0.x86_64.rpm.zip /tmp
+RUN unzip /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
+RUN yum localinstall -y Disk1/oracle-xe-11.2.0-1.0.x86_64.rpm; rm -f /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
 
 ENV ORACLE_SID  XE
 ENV ORACLE_HOME /u01/app/oracle/product/11.2.0/xe
 ENV PATH        $ORACLE_HOME/bin:$PATH
 
-# Configure the new database
-ADD Disk1/response/xe.rsp /u01/app/oracle/product/11.2.0/xe/config/scripts/xe.rsp
-ADD initXETemp.ora        /u01/app/oracle/product/11.2.0/xe/config/scripts/initXETemp.ora
-ADD init.ora              /u01/app/oracle/product/11.2.0/xe/config/scripts/init.ora
+# Configure database
+ADD init.ora initXETemp.ora xe.rsp /u01/app/oracle/product/11.2.0/xe/config/scripts/
 RUN service oracle-xe configure responseFile=/u01/app/oracle/product/11.2.0/xe/config/scripts/xe.rsp
 
-EXPOSE 1521 8080
+# Start database
+ADD start.sh /
+CMD /start.sh
 
-ADD start /tmp/start
-CMD /tmp/start
+EXPOSE 1521
+EXPOSE 8080
