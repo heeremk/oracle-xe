@@ -26,15 +26,13 @@ $ docker run -d -p 1521:1521 --name db heeremk/oracle-xe
 
 ## Connect
 The default password for both the `sys` and the `system` user is `manager`
-```
 So from the docker host, you can connect with `system/manager@localhost:1521`
-```
 When connecting from another machine, first lookup ip of your docker host and use that.
-
+```
 $ boot2docker ip
 The VM's Host only interface IP address is: 192.168.0.203
-
 ```
+
 If you're looking for a database client, consider [sqlplus](http://www.oracle.com/technetwork/database/features/instant-client/index-100365.html)
 ```
 $ sqlplus system/manager@192.168.0.203:1521
